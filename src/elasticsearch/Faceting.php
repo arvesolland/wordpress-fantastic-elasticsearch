@@ -183,8 +183,48 @@ class Faceting{
 					'slug' => $term->slug
 				);
 
-				if(isset($_GET[$tax]) && in_array($term->slug, $_GET[$tax]['and'])){
-					$taxonomy['selected'][$term->slug] = $item;
+				
+
+				$current_url_param = $_GET[$tax];
+				//debug($current_url_param);
+				
+				if (isset($current_url_param)){
+					if (is_array($current_url_param)) {
+						$isSelected = false;
+
+						if (is_array($current_url_param['and'])){
+							//print ('DB1');
+							if (in_array($term->slug, $current_url_param['and'])) {
+								//print ('DB2');
+								
+								$taxonomy['selected'][$term->slug] = $item;
+								//print $tax . ' - ' . $term->slug . ' selected 1<br/>'; 
+								$isSelected = true;
+							} 
+						}
+						
+						if (in_array($term->slug, $current_url_param)) {
+							$taxonomy['selected'][$term->slug] = $item;
+							//print $tax . ' - ' . $term->slug . ' selected <br/>'; 
+							$isSelected = true;
+						} 
+						
+					} 
+				} 
+				if (!$isSelected){
+					$count = $item['count'] = $facets[$tax][$term->slug];
+
+					if($count > 0){
+						//print $tax . ' - ' . $term->slug . ' available 3 <br/>'; 	
+						$taxonomy['available'][$term->slug] = $item;
+						$taxonomy['total'] += $item['count'];
+					}
+				}
+				//debug($taxonomy);
+
+				/*
+				if(isset($_GET[$tax]) && in_array($term->name, $_GET[$tax]['and'])){
+					$taxonomy['selected'][$term->name] = $item;
 				}else if(isset($facets[$tax][$term->slug])){
 					$count = $item['count'] = $facets[$tax][$term->slug];
 
@@ -193,6 +233,7 @@ class Faceting{
 						$taxonomy['total'] += $item['count'];
 					}
 				}
+				*/
 			}
 		}
 
@@ -237,8 +278,11 @@ class Faceting{
 				$maxTotal = log($itm['count']);
 			}
 		}
-
-		return floor((log($item['count']) / $maxTotal) * ($max - $min) + $min);
+		if ($maxTotal > 0){
+			return floor((log($item['count']) / $maxTotal) * ($max - $min) + $min);
+		} 
+		return 0;
+		
 	}
 
 	/**
@@ -259,13 +303,28 @@ class Faceting{
 		if(isset($filter[$type])){
 			$op = array_keys($filter[$type]);
 			$op = $op[0];
+			$current_values = $filter[$type][$op];
 		}
 
-		$filter[$type][$op][] = $value;
+		//print 'current values:';debug($current_values);
+
+
+		if ( isset($current_values) ) {
+			array_push($current_values, $value);
+			$filter[$type][$op] = $current_values;
+		} else {
+			$filter[$type][$op][0] = $value;
+		}
+
+		//debug($filter);
+	
 
 		$url = new \Purl\Url($url);
-		$url->query->setData($filter);
 
+
+
+		$url->query->setData($filter);
+		//debug($url->getUrl());
 		return $url->getUrl();
 	}
 
@@ -280,6 +339,8 @@ class Faceting{
 	**/
 	static function urlRemove($url, $type, $value){
 		$filter = $_GET;
+
+		//debug($filter);
 
 		$operation = isset($filter[$type]['and']) ? 'and' : 'or';
 
@@ -303,6 +364,33 @@ class Faceting{
 		$url->query->setData($filter);
 
 		return $url->getUrl();
+	}
+
+	static function getFacet($facets, $tax, $title, $type = 'standard'){
+		//debug($tax);
+		//debug($facets[$tax]);
+		$html = "";
+		if ( isset($facets[$tax]) ) {
+			$html = '<h5>' . $title . '</h5>';
+
+	        $html .= '<ul>';
+	        foreach($facets[$tax]['selected'] as $option){
+	            $url = Faceting::urlRemove(get_permalink(), $type, $option['slug']);
+	            $html .= '<li><a href="' . $url . '">(x) ' . $option['name'] . ' <a/></li>';
+	        }
+	        $html .= '</ul>';	
+
+	        $html .= '<ul>';
+	        foreach($facets[$tax]['available'] as $option){
+	            $url = Faceting::urlAdd(get_permalink(), $type, $option['slug']);
+	            $html .= '<li><a href="' . $url . '">' . $option['name'] . ' <a/></li>';
+	        }
+	        $html .= '</ul>';
+
+		}
+		return $html;
+		
+
 	}
 }
 

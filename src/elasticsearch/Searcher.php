@@ -37,6 +37,7 @@ class Searcher{
 	* @internal
 	**/
 	public static function _query($args, $pageIndex, $size){
+		//debug($args);
 		$query =new \Elastica\Query($args);
 		$query->setFrom($pageIndex * $size);
 		$query->setSize($size);
@@ -103,13 +104,19 @@ class Searcher{
 	* @internal
 	**/
 	public static function _buildQuery($search, $facets = array()){
+		//debug($facets);
 		global $blog_id;
+
 
 		$shoulds = array();
 		$musts = array();
 		$filters = array();
 
 		foreach(Config::taxonomies() as $tax){
+			if ( isset($_GET[$tax]) ) {
+				$facets[$tax] = $_GET[$tax];
+
+			}
 			if($search){
 				$score = Config::score('tax', $tax);
 
@@ -197,6 +204,8 @@ class Searcher{
 	public static function _filterBySelectedFacets($name, $facets, $type, &$musts, &$filters, $translate = array()){
 		if(isset($facets[$name])){
 			$output = &$musts;
+
+
 
 			$facets = $facets[$name];
 
