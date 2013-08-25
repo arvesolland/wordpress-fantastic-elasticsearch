@@ -37,7 +37,7 @@ class Searcher{
 	* @internal
 	**/
 	public static function _query($args, $pageIndex, $size){
-		//debug($args);
+		//debug($args['query']);
 		$query =new \Elastica\Query($args);
 		$query->setFrom($pageIndex * $size);
 		$query->setSize($size);
@@ -65,6 +65,57 @@ class Searcher{
 			return null;
 		}
 	}
+
+	/**
+     * Auto complete query
+     */
+    function auto_complete_query($args)
+    {
+        
+        
+
+        
+
+		//debug($args);	
+
+
+
+		try{
+			$index = Indexer::_index(false);
+
+			$search = new \Elastica\Search($index->getClient());
+			$search->addIndex($index);
+			
+			//$query->addSort(array('post_date' => array('order' => 'desc')));
+			//$query->addSort('_score');
+
+			
+			$results = $search->search($args['term']);
+			$suggestions=array();
+			foreach($results->getResults() as $result){
+				$suggestion = array();
+				$resultData = $result->getData();  
+
+		        $suggestion['label'] = esc_html($resultData['post_title']);  
+		        $suggestion['link'] = get_permalink($result->getId());  
+		  
+		        // Add suggestion to suggestions array  
+		        $suggestions[]= $suggestion;  
+				//debug($result->getData());
+			}			
+			
+			// JSON encode and echo  
+		    $response = $args["callback"] . "(" . json_encode($suggestions) . ")";  
+		    print $response; 
+			//print_r(self::_parseResults($results));
+		}catch(\Exception $ex){
+			error_log($ex);
+
+			return null;
+		}
+        
+       
+    }
 
 	/**
 	* @internal

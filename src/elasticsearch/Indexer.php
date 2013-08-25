@@ -225,6 +225,17 @@ class Indexer{
 				}
 			}
 		}
+
+		$destination_rooms = array();
+		$rooms = get_field('rooms', $post->ID);
+		if ( count( $rooms ) ) {
+			foreach ($rooms as $room) {
+				$mapped_room =  self::_build_document($room);
+				array_push($destination_rooms, $mapped_room);
+			}
+			$document['rooms'] = $destination_rooms;
+
+		}
 		
 		return Config::apply_filters('indexer_build_document', $document, $post);
 	}

@@ -14,6 +14,7 @@ foreach(Config::fields() as $field){
 	);
 }
 
+
 foreach(Config::taxonomies() as $tax){
 	$fields[] = array(
 		'id' => 'score_tax_' . $tax,
@@ -23,6 +24,30 @@ foreach(Config::taxonomies() as $tax){
 		'title' => "Taxonomy: $tax",
 		'std' => 2
 	);
+}
+
+foreach($custom_fields as $tax){
+	if ($field[0] == 'text' || $field[0] == 'wysiwyg' || $field[0] == 'number' || $field[0] == 'textarea') {
+		//index as fields
+		$fields[] = array(
+			'id' => 'score_field_' . $field,
+			'type' => 'text',
+			'validation' => 'numeric',
+			'desc' => 'A numeric value (if 0, it will have no influence)',
+			'title' => "Field: $field",
+			'std' => 1
+		);
+	} else if ($field[0] == 'checkbox' || $field[0] == 'radio' ) {
+		//add them as facet fields
+		$fields[] = array(
+			'id' => 'score_tax_' . $tax,
+			'type' => 'text',
+			'validation' => 'numeric',
+			'desc' => 'A numeric value (if 0, it will have no influence)',
+			'title' => "Taxonomy: $tax",
+			'std' => 2
+		);
+	}
 }
 
 $sections['scoring'] = array(

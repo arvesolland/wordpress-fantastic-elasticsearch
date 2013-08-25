@@ -58,6 +58,8 @@ class Faceting{
 			$options[$tax] = self::taxonomy($tax);
 		}
 
+
+
 		$numeric = Config::option('numeric');
 
 		foreach(Config::fields() as $field){
@@ -66,12 +68,14 @@ class Faceting{
 			}
 		}
 
+
+
 		foreach($options as $name => &$field){
 			foreach($field['available'] as &$available){
 				$available['font'] = self::cloud($field['available'], $available, $minFont, $maxFont);
 			}
 		}
-
+		
 		return $options;
 	}
 
@@ -115,6 +119,8 @@ class Faceting{
 
 		$ranges = Config::ranges($field);
 
+
+
 		if($ranges){
 			foreach($ranges as $slug => $range){
 				$split = explode('-', $slug);
@@ -134,6 +140,9 @@ class Faceting{
 				}
 			}
 		}
+
+		print 'ranges: ';
+		debug($result);
 
 		return $result;
 	}
@@ -170,6 +179,8 @@ class Faceting{
 
 		$facets = $wp_query->facets;
 
+		
+
 		$taxonomy = array(
 			'selected' => array(),
 			'available' => array(),
@@ -186,7 +197,7 @@ class Faceting{
 				
 
 				$current_url_param = $_GET[$tax];
-				//debug($current_url_param);
+				
 				
 				if (isset($current_url_param)){
 					if (is_array($current_url_param)) {
@@ -298,6 +309,8 @@ class Faceting{
 	static function urlAdd($url, $type, $value, $operation = 'and'){
 		$filter = $_GET;
 
+		//print $url .' | '.$type.' | '.$value;
+
 		$op = $operation;
 
 		if(isset($filter[$type])){
@@ -366,7 +379,7 @@ class Faceting{
 		return $url->getUrl();
 	}
 
-	static function getFacet($facets, $tax, $title, $type = 'standard'){
+	static function getTaxFacet($facets, $tax, $title, $type = 'standard'){
 		//debug($tax);
 		//debug($facets[$tax]);
 		$html = "";
@@ -375,14 +388,14 @@ class Faceting{
 
 	        $html .= '<ul>';
 	        foreach($facets[$tax]['selected'] as $option){
-	            $url = Faceting::urlRemove(get_permalink(), $type, $option['slug']);
+	            $url = Faceting::urlRemove(home_url(), $tax, $option['slug']);
 	            $html .= '<li><a href="' . $url . '">(x) ' . $option['name'] . ' <a/></li>';
 	        }
 	        $html .= '</ul>';	
 
 	        $html .= '<ul>';
 	        foreach($facets[$tax]['available'] as $option){
-	            $url = Faceting::urlAdd(get_permalink(), $type, $option['slug']);
+	            $url = Faceting::urlAdd(home_url(), $tax, $option['slug']);
 	            $html .= '<li><a href="' . $url . '">' . $option['name'] . ' <a/></li>';
 	        }
 	        $html .= '</ul>';
@@ -391,6 +404,95 @@ class Faceting{
 		return $html;
 		
 
+	}
+
+	static function getFacetField($facets, $field, $title, $type = 'standard'){
+		//debug($tax);
+		//debug($facets[$tax]);
+		$html = "";
+		//debug($facets);
+		$facet_array = self::setupFacetField($facets, $field);
+		//debug($facet_array);
+
+		if ( isset($facet_array) ) {
+			$html .= '<h5>' . $title . '</h5>';
+	        $html .= '<ul>';
+	        if (isset($facet_array['selected'])) {
+		        foreach($facet_array['selected'] as $option){
+		        	//debug($option);
+		            $url = Faceting::urlRemove(home_url(), $field, $option['name']);
+		            $html .= '<li><a href="' . $url . '">(x) ' . $option['name'] . ' <a/></li>';
+		        }
+		        $html .= '</ul>';	
+	    	}
+
+	    	if (isset($facet_array['available'])) {
+		        $html .= '<ul>';
+		        foreach($facet_array['available'] as $option){
+		            $url = Faceting::urlAdd(home_url(), $field, $option['name']);
+		            $html .= '<li><a href="' . $url . '">' . $option['name'] . ' ('.$option['count'].')<a/></li>';
+		        }
+		        $html .= '</ul>';
+	    	}
+
+		}
+		return $html;
+		
+
+	}
+
+	static function setupFacetField($facets, $field) {
+			$facet_array = array();
+			$current_url_param = $_GET[$field];
+			
+				
+			if(isset($facets[$field])){
+			//debug($facets[$field]);
+
+			foreach($facets[$field] as $term => $count){
+				$item = array(
+					'name' => $term,
+					'count' => $count
+				);
+				$current_url_param = $_GET[$field];
+				
+				
+				if (isset($current_url_param)){
+					if (is_array($current_url_param)) {
+						$isSelected = false;
+
+						if (is_array($current_url_param['and'])){
+							//print ('DB1');
+							if (in_array($term, $current_url_param['and'])) {
+								//print ('DB2');
+								
+								$facet_array['selected'][$term] = $item;
+								//print $tax . ' - ' . $term->slug . ' selected 1<br/>'; 
+								$isSelected = true;
+							} 
+						}
+						
+						if (in_array($term, $current_url_param)) {
+							$facet_array['selected'][$term] = $item;
+							//print $tax . ' - ' . $term->slug . ' selected <br/>'; 
+							$isSelected = true;
+						} 
+						
+					} 
+				} 
+				if (!$isSelected){
+					$count = $item['count'] = $facets[$field][$term];
+
+					if($count > 0){
+						//print $tax . ' - ' . $term->slug . ' available 3 <br/>'; 	
+						$facet_array['available'][$term] = $item;
+						$facet_array['total'] += $item['count'];
+					}
+				}
+				
+			}
+		}
+		return $facet_array;
 	}
 }
 

@@ -55,6 +55,7 @@ add_action( 'admin_enqueue_scripts', function() {
 
 add_action('init', function(){
 	$args = array();
+	add_action('elastic_autocomplete', 'autocomplete_callback');
 
 	$args['share_icons']['twitter'] = array(
 		'link' => 'http://twitter.com/parisholley',
@@ -93,4 +94,18 @@ add_action('init', function(){
 
 	$NHP_Options = new \NHP_Options($sections, $args, $tabs);
 }, 10241988);
+
+
+add_action('wp_ajax_autocomplete_callback', 'autocomplete_callback');
+add_action('wp_ajax_nopriv_autocomplete_callback', 'autocomplete_callback');
+add_action('elastic_autocomplete', 'autocomplete_callback');
+
+
+function autocomplete_callback()
+    {
+    	print "Hello searcher this is me.";
+        $query = sanitize_text_field($_GET['term']);
+        Searcher::auto_complete_query($query);
+        die();
+    }
 ?>
