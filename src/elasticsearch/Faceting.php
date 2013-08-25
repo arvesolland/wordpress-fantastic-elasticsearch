@@ -384,7 +384,8 @@ class Faceting{
 		//debug($facets[$tax]);
 		$html = "";
 		if ( isset($facets[$tax]) ) {
-			$html = '<h5>' . $title . '</h5>';
+			$html .= '<div class="search-facet">';
+			$html .= '<h5>' . $title . '</h5>';
 
 	        $html .= '<ul>';
 	        foreach($facets[$tax]['selected'] as $option){
@@ -399,6 +400,7 @@ class Faceting{
 	            $html .= '<li><a href="' . $url . '">' . $option['name'] . ' <a/></li>';
 	        }
 	        $html .= '</ul>';
+	        $html .= '</div>';
 
 		}
 		return $html;
@@ -415,6 +417,7 @@ class Faceting{
 		//debug($facet_array);
 
 		if ( isset($facet_array) ) {
+			$html .= '<div class="search-facet">';
 			$html .= '<h5>' . $title . '</h5>';
 	        $html .= '<ul>';
 	        if (isset($facet_array['selected'])) {
@@ -434,6 +437,7 @@ class Faceting{
 		        }
 		        $html .= '</ul>';
 	    	}
+	    	$html .= '</div>';
 
 		}
 		return $html;
