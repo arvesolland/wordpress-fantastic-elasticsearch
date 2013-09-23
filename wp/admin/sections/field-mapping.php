@@ -24,13 +24,21 @@ foreach(Config::fields() as $field){
 	}
 }
 
-foreach(all_custom_fields() as $field){
-	//debug($field);
-	if($field != 'post_date'){
-		$fields['numeric']['options'][$field] = $field;
-		$fields['not_analyzed']['options'][$field] = $field;
+$custom_fields = all_custom_fields();
+foreach($custom_fields as $key => $field){	
+	if ($key == 'number'  ) {
+		foreach($field as $f){
+			//debug($field);	
+			$fields['numeric']['options'][$f] = $f;
+			$fields['not_analyzed']['options'][$f] = $f;
+
+		}
+		
 	}
+	
 }
+
+
 
 $numeric_option = Config::option('numeric');
 

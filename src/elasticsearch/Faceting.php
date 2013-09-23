@@ -424,7 +424,7 @@ class Faceting{
 		        foreach($facet_array['selected'] as $option){
 		        	//debug($option);
 		            $url = Faceting::urlRemove(home_url(), $field, $option['name']);
-		            $html .= '<li><a href="' . $url . '">(x) ' . $option['name'] . ' <a/></li>';
+		            $html .= '<li class="selectedFacetItem"><a href="' . $url . '"><span class="removeFacetSymbol">(x)</span> ' . $option['name'] . ' </a></li>';
 		        }
 		        $html .= '</ul>';	
 	    	}
@@ -433,7 +433,7 @@ class Faceting{
 		        $html .= '<ul>';
 		        foreach($facet_array['available'] as $option){
 		            $url = Faceting::urlAdd(home_url(), $field, $option['name']);
-		            $html .= '<li><a href="' . $url . '">' . $option['name'] . ' ('.$option['count'].')<a/></li>';
+		            $html .= '<li class="availableFacetItem"><a href="' . $url . '">' . $option['name'] . ' ('.$option['count'].')</a></li>';
 		        }
 		        $html .= '</ul>';
 	    	}

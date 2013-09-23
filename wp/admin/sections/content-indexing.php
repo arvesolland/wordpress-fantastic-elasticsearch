@@ -40,6 +40,7 @@ foreach(Defaults::taxonomies(Defaults::types()) as $tax){
 
 $custom_fields = all_custom_fields();
 foreach($custom_fields as $key => $field){
+
 	
 	if ($key == 'text' || $key == 'wysiwyg' || $key == 'number' || $key == 'textarea') {
 		//index as fields
@@ -61,7 +62,12 @@ foreach($custom_fields as $key => $field){
 			$fields[2]['std'][$f] = 1;
 		}
 		
-	}
+	} 
+
+	$fields[2]['options']['parent_place_facet'] = 'parent_place_facet';
+	$fields[2]['std']['parent_place_facet'] = 1;
+
+
 
 	
 }

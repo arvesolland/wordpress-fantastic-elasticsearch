@@ -22,12 +22,15 @@ class Searcher{
 	public static function search($search, $pageIndex = 0, $size = 10, $facets = array()){
 		$args = self::_buildQuery($search, $facets);
 
-		if(empty($args) || (empty($args['query']) && empty($args['facets']))){
+		if(empty($args) ||  (empty($args['query']) && empty($args['facets']))){
+			return self::return_all_query();
+			/*
 			return array(
 				'total' => 0,
 				'ids' => array(),
 				'facets' => array()
 			);
+			*/
 		}
 
 		return self::_query($args, $pageIndex, $size);
@@ -65,6 +68,33 @@ class Searcher{
 			return null;
 		}
 	}
+
+	function return_all_query()
+    {
+
+		try{
+			$query = new \Elastica_Query_Builder('{	
+			"query" : {
+		        "match_all" : {}
+		    }}');
+
+			$index = Indexer::_index(false);
+			$search = new \Elastica\Search($index->getClient());
+			$search->addIndex($index);
+			$query->addSort(array('post_date' => array('order' => 'desc')));
+			$query->addSort('_score');
+
+			$results = $search->search($query);
+			
+			return self::_parseResults($results);
+		}catch(\Exception $ex){
+			error_log($ex);
+
+			return null;
+		}
+        
+       
+    }
 
 	/**
      * Auto complete query
@@ -121,6 +151,7 @@ class Searcher{
 	* @internal
 	**/
 	public static function _parseResults($response){
+		//debug($response);
 		$val = array(
 			'total' => $response->getTotalHits(),
 			'facets' => array(),

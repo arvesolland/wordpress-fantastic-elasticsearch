@@ -82,6 +82,9 @@ class Indexer{
 			self::addOrUpdate($post);
 		}
 
+		get_autocomplete_search_results();
+		
+
 		return count($posts);
 	}
 
